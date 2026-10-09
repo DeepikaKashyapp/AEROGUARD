@@ -1,4 +1,5 @@
-import type { Catalogue, Scenario, SessionResult } from "@cuas/sim";
+import type { AidModel, Catalogue, Scenario, SessionResult } from "@cuas/sim";
+import { demoApi } from "./demo/demoApi.ts";
 import type { Debrief, MissionInfo, Report, SessionBundle, SessionRow, Trainee, Trends, Unit, UnitDashboard } from "./types.ts";
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
@@ -22,8 +23,9 @@ async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
 
 let catalogueCache: Promise<Catalogue> | null = null;
 
-export const api = {
+const serverApi = {
   catalogue: () => (catalogueCache ??= req<Catalogue>("GET", "/api/catalogue")),
+  aidModel: () => req<AidModel>("GET", "/api/aid/model"),
   missions: () => req<MissionInfo[]>("GET", "/api/missions"),
   skills: () => req<Record<string, string>>("GET", "/api/skills"),
   units: () => req<Unit[]>("GET", "/api/units"),
@@ -50,6 +52,10 @@ export const api = {
   publishRules: (yaml: string, note: string) => req<{ version: number }>("PUT", "/api/rules", { yaml, note, author: "instructor" }),
   generate: (seed: number, level: number, focus: string[]) => req<Scenario>("POST", "/api/scenarios/generate", { seed, level, focus }),
 };
+
+/** The static preview build (scripts/build_preview.sh) swaps in a server-free API. */
+export const DEMO = import.meta.env.VITE_DEMO === "1";
+export const api: typeof serverApi = DEMO ? (demoApi as unknown as typeof serverApi) : serverApi;
 
 /** Hand a scenario from the briefing page to the mission page without re-fetching. */
 export const handoff: { scenario: Scenario | null; session: SessionRow | null } = { scenario: null, session: null };

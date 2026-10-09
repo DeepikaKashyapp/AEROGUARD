@@ -4,7 +4,8 @@
  * so their raw scores plateau by design.
  */
 import { useEffect, useState } from "react";
-import { api, handoff } from "../api.ts";
+import { DEMO, api, handoff } from "../api.ts";
+import { PREVIEW_REVIEW_IDS } from "../demo/demoApi.ts";
 import { go } from "../App.tsx";
 import { ChartCard, DivergingBars, SessionLines, SimpleBars, Stat, VIZ } from "../charts/ChartKit.tsx";
 import type { Trends } from "../types.ts";
@@ -104,7 +105,7 @@ export default function TraineePage({ traineeId }: { traineeId: string }) {
                   { key: "bench", name: "Benchmark B-1", color: VIZ.series[1], connectNulls: true },
                 ]}
                 yDomain={[0, 100]}
-                onPoint={(row) => row?.id && go(`aar/${row.id}`)}
+                onPoint={(row) => row?.id && go(!DEMO || PREVIEW_REVIEW_IDS.includes(String(row.id)) ? `aar/${row.id}` : "")}
               />
             </ChartCard>
             <ChartCard
@@ -187,14 +188,17 @@ export default function TraineePage({ traineeId }: { traineeId: string }) {
               <thead><tr><th>#</th><th>When</th><th>Mission</th><th>Mode</th><th className="num">Difficulty</th><th className="num">Score</th><th>Grade</th></tr></thead>
               <tbody>
                 {[...s].reverse().map((x) => (
-                  <tr key={x.id} className="click" onClick={() => go(`aar/${x.id}`)}>
+                  <tr key={x.id} className="click" onClick={() => go(!DEMO || PREVIEW_REVIEW_IDS.includes(x.id) ? `aar/${x.id}` : "")}>
                     <td className="mono">{x.n}</td>
                     <td className="small">{when(x.scored_at)}</td>
                     <td>{x.name}</td>
                     <td className="small muted">{x.mode}{x.focus.length ? ` · ${x.focus.join(",")}` : ""}</td>
                     <td className="num">{x.level !== null ? `${Math.round(x.level * 100)}%` : "-"}</td>
                     <td className="num">{x.total.toFixed(1)}</td>
-                    <td><span className={`grade ${x.grade}`}>{x.grade}</span></td>
+                    <td>
+                      <span className={`grade ${x.grade}`}>{x.grade}</span>
+                      {DEMO && !PREVIEW_REVIEW_IDS.includes(x.id) && <span className="faint small"> not in preview</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>

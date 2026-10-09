@@ -1,6 +1,6 @@
 /** Unit dashboard (PLAN.md 6.10): who is weak at what, and is the course improving. */
 import { useEffect, useState } from "react";
-import { api } from "../api.ts";
+import { DEMO, api } from "../api.ts";
 import { go } from "../App.tsx";
 import { ChartCard, SessionLines, Stat, VIZ } from "../charts/ChartKit.tsx";
 import type { Unit, UnitDashboard } from "../types.ts";
@@ -56,6 +56,12 @@ export default function UnitPage({ unitId }: { unitId?: string }) {
       {d.synthetic && (
         <div className="banner synthetic" style={{ marginBottom: 12 }}>
           SYNTHETIC unit: six simulated trainees (each with a different built-in weakness) flew 10 sessions each through the real loop. Use it to read the dashboard, not as evidence.
+        </div>
+      )}
+      {DEMO && !d.synthetic && (
+        <div className="banner" style={{ marginBottom: 12 }}>
+          Missions flown in the preview are not scored, so this unit stays at the starting ratings. Pick the SYNTHETIC course above to see a
+          filled-in dashboard.
         </div>
       )}
       <div className="tiles" style={{ marginBottom: 16 }}>

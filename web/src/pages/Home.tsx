@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, handoff } from "../api.ts";
+import { DEMO, api, handoff } from "../api.ts";
+import { PREVIEW_REVIEW_IDS, localResult } from "../demo/demoApi.ts";
 import { go } from "../App.tsx";
 import type { MissionInfo, SessionRow, Trainee, Unit } from "../types.ts";
 import { ROE_TEXT, STORAGE, when } from "../util.ts";
@@ -140,6 +141,15 @@ function TraineeList({ units, trainees, selected, onPick, onCreated }: {
   );
 }
 
+/** Where a recent-session row leads (the preview has only some recorded reviews). */
+function openTarget(s: SessionRow): string {
+  if (DEMO) {
+    if (localResult(s.id)?.result) return `summary/${s.id}`;
+    if (s.status === "scored") return PREVIEW_REVIEW_IDS.includes(s.id) ? `aar/${s.id}` : "";
+  }
+  return s.status === "scored" ? `aar/${s.id}` : `briefing/${s.id}`;
+}
+
 function TraineeHome({ trainee, missions }: { trainee: Trainee; missions: MissionInfo[] }) {
   const [recent, setRecent] = useState<SessionRow[]>([]);
   const [aid, setAid] = useState<"off" | "honest" | "unreliable">("off");
@@ -225,12 +235,15 @@ function TraineeHome({ trainee, missions }: { trainee: Trainee; missions: Missio
             </thead>
             <tbody>
               {recent.map((s) => (
-                <tr key={s.id} className="click" onClick={() => go(s.status === "scored" ? `aar/${s.id}` : `briefing/${s.id}`)}>
+                <tr key={s.id} className="click" onClick={() => go(openTarget(s))} title={DEMO && openTarget(s) === "" ? "Not included in the preview" : undefined}>
                   <td className="small">{when(s.scored_at ?? s.created)}</td>
                   <td>{s.scenario_name}</td>
                   <td className="small muted">{s.mode}</td>
                   <td className="num">{s.total === null ? "-" : s.total.toFixed(1)}</td>
-                  <td>{s.grade ? <span className={`grade ${s.grade}`}>{s.grade}</span> : <span className="faint small">not flown</span>}</td>
+                  <td>
+                    {s.grade ? <span className={`grade ${s.grade}`}>{s.grade}</span> : <span className="faint small">{localResult(s.id)?.result ? "summary" : "not flown"}</span>}
+                    {DEMO && s.status === "scored" && !PREVIEW_REVIEW_IDS.includes(s.id) && <span className="faint small"> · not in preview</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>

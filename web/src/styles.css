@@ -258,3 +258,20 @@ table.data td.num, table.data th.num { text-align: right; font-family: var(--mon
 .stat-tile .n { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .heat td.cell { min-width: 58px; border-radius: 4px; color: #fff; }
 table.data td.num { white-space: nowrap; }
+
+/* ---- preview build ---- */
+.preview-bar { padding: 8px 20px; font-size: 12px; color: #d6b8ff; background: #1a1226; border-bottom: 1px solid #4d3470; }
+.preview-bar code { font-family: var(--mono); }
+
+/* ---- narrow screens (the console itself needs a laptop) ---- */
+@media (max-width: 760px) {
+  .page { padding: 16px 16px 48px; }
+  .topbar { flex-wrap: wrap; gap: 8px 14px; padding: 10px 16px; position: static; }
+  .brand small { display: none; }
+  .preview-bar { padding: 8px 16px; }
+  .grid[style] { grid-template-columns: minmax(0, 1fr) !important; }
+  .grid.two, .grid.three { grid-template-columns: minmax(0, 1fr); }
+  .panel { overflow-x: auto; }
+  .tiles { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  h1 { font-size: 19px; }
+}

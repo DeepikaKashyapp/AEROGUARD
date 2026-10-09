@@ -48,6 +48,7 @@ To try it:
 | All tests | `npm run typecheck && npm run test:sim && .venv/bin/python -m pytest -q tests` |
 | End-to-end browser playthrough | `BASE=http://127.0.0.1:8000 CHROMIUM=/path/to/chromium npm run e2e -- familiarisation` |
 | Re-seed demo data | `.venv/bin/python scripts/seed_demo.py --reset` |
+| Static preview (one self-contained HTML file, no server) | `./scripts/build_preview.sh` → `build/preview/aeroguard-preview.html`; smoke test: `CHROMIUM=/path/to/chromium node web/e2e/preview.mjs build/preview/aeroguard-preview.html` |
 | Retrain the classification aid | `.venv/bin/python scripts/train_aid.py` (needs `requirements-dev.txt`) |
 | Optional LLM debrief | set `GROQ_API_KEY` (and optionally `AEROGUARD_LLM_MODEL`); without it a deterministic template debrief is used |
 
@@ -178,6 +179,7 @@ tests/        pytest: contracts, generator, scoring + bot regression, API, adapt
 | **22 sim tests** (`npm run test:sim`) | Determinism, each sensor weakness, soft and hard kill, friendlies caught in jam sectors, collateral, camera lock, ROE authority, the aid, no truth in the view |
 | **50 server tests** (`pytest`) | Contracts up to date; generator determinism and focus effects; scoring units; and a **bot regression suite** |
 | End-to-end browser playthrough | Creates a trainee and flies a whole mission through the production build's UI, then checks the AAR. Familiarisation and the flagship both score A. |
+| Preview smoke test | Loads the static preview under a no-network CSP, flies familiarisation through the UI to the mission summary, then opens a recorded AAR, the dashboards and the instructor page, and checks the home page fits a 390 px phone screen. |
 
 The bot regression suite works like this:
 

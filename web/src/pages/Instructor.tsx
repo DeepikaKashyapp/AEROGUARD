@@ -5,7 +5,7 @@
  */
 import { Terrain, type AidModel, type Catalogue, type Scenario } from "@cuas/sim";
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../api.ts";
+import { DEMO, api } from "../api.ts";
 import type { MapModel } from "../console/mapDraw.ts";
 import TacticalMap from "../console/TacticalMap.tsx";
 import type { Unit } from "../types.ts";
@@ -18,6 +18,12 @@ export default function InstructorPage() {
         <div className="small muted">DIRECTING STAFF</div>
         <h1 style={{ margin: 0 }}>Instructor tools</h1>
       </div>
+      {DEMO && (
+        <div className="banner warn">
+          Preview build: re-scoring, publishing rules and generating drills run on the AEROGUARD server, so here the rules are read-only and
+          the drill generator shows pre-generated examples.
+        </div>
+      )}
       <RulesEditor />
       <DrillGenerator />
       <AidCard />
@@ -275,7 +281,7 @@ function drillModel(sc: Scenario, cat: Catalogue): MapModel {
 function AidCard() {
   const [m, setM] = useState<AidModel | null>(null);
   useEffect(() => {
-    fetch("/api/aid/model").then((r) => (r.ok ? r.json() : null)).then(setM);
+    api.aidModel().then(setM).catch(() => setM(null));
   }, []);
   if (!m) return null;
   const mt = m.metrics as Record<string, any>;

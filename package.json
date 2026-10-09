@@ -16,7 +16,8 @@
     "start": "bash scripts/start.sh",
     "e2e": "node web/e2e/playthrough.mjs",
     "seed": ".venv/bin/python scripts/seed_demo.py",
-    "train-aid": ".venv/bin/python scripts/train_aid.py"
+    "train-aid": ".venv/bin/python scripts/train_aid.py",
+    "preview": "bash scripts/build_preview.sh"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

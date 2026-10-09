@@ -6,7 +6,7 @@
  */
 import { DT, Sim, type AidFn, type Label, type Scenario, type SimView, type TrackView } from "@cuas/sim";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api, handoff } from "../api.ts";
+import { DEMO, api, handoff } from "../api.ts";
 import { go } from "../App.tsx";
 import CameraView from "../console/CameraView.tsx";
 import EffectorPanel, { effectorKeys } from "../console/EffectorPanel.tsx";
@@ -71,6 +71,7 @@ function Console({ sim, session }: { sim: Sim; session: SessionRow }) {
   const [showRanges, setShowRanges] = useState(false);
   const [phase, setPhase] = useState<"run" | "submitting" | "error">("run");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [confirmEnd, setConfirmEnd] = useState(false);
   const sel = useRef<string | null>(null);
   sel.current = selected;
   const viewRef = useRef(view);
@@ -119,7 +120,7 @@ function Console({ sim, session }: { sim: Sim; session: SessionRow }) {
     setPhase("submitting");
     api
       .submit(session.id, sim.result())
-      .then(() => go(`aar/${session.id}`))
+      .then(() => go(DEMO ? `summary/${session.id}` : `aar/${session.id}`))
       .catch((e) => {
         setSubmitError(String(e));
         setPhase("error");
@@ -237,6 +238,24 @@ function Console({ sim, session }: { sim: Sim; session: SessionRow }) {
   }, [sim]);
 
   const sc = sim.sc;
+  const [narrow, setNarrow] = useState(() => window.innerWidth < 1000);
+  useEffect(() => {
+    const on = () => setNarrow(window.innerWidth < 1000);
+    addEventListener("resize", on);
+    return () => removeEventListener("resize", on);
+  }, []);
+  if (narrow) {
+    return (
+      <div className="page col" style={{ gap: 12 }}>
+        <h1 style={{ margin: 0 }}>{sc.name}</h1>
+        <div className="banner warn">
+          The C2 console needs a laptop-sized screen (at least 1000 px wide): a tactical map, track table, camera and effector panel side by side.
+          Open this page on a laptop or desktop to fly the mission.
+        </div>
+        <div><a className="btn" href="#/">Back to trainees</a></div>
+      </div>
+    );
+  }
 
   return (
     <div className="console">
@@ -264,7 +283,14 @@ function Console({ sim, session }: { sim: Sim; session: SessionRow }) {
         {speed !== 1 && <span className="badge warn" title="Dev time compression (?speed=)">×{speed}</span>}
         <button className="sm" onClick={() => { if (sim.paused) sim.resume(); else sim.pause(); setPaused(sim.paused); }}>{paused ? "Resume" : "Pause"}</button>
         <button className="sm" onClick={() => setHelp((h) => !h)} title="Keys">?</button>
-        <button className="sm danger" onClick={() => { if (confirm("End the mission now? It will be scored as aborted.")) sim.abort(); setView(sim.view()); }}>End</button>
+        {confirmEnd ? (
+          <>
+            <button className="sm danger" onClick={() => { sim.abort(); setView(sim.view()); }}>End now (scored as aborted)</button>
+            <button className="sm" onClick={() => setConfirmEnd(false)}>Keep flying</button>
+          </>
+        ) : (
+          <button className="sm danger" onClick={() => setConfirmEnd(true)}>End</button>
+        )}
       </div>
       <div className="console-body">
         <div className="console-left">

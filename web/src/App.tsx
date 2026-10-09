@@ -4,6 +4,8 @@ import Briefing from "./pages/Briefing.tsx";
 import Home from "./pages/Home.tsx";
 import Instructor from "./pages/Instructor.tsx";
 import Mission from "./pages/Mission.tsx";
+import SummaryPage from "./pages/Summary.tsx";
+import { DEMO } from "./api.ts";
 import TraineePage from "./pages/Trainee.tsx";
 import UnitPage from "./pages/Unit.tsx";
 
@@ -19,6 +21,7 @@ function useRoute(): string[] {
 }
 
 export function go(path: string): void {
+  if (!path) return;
   location.hash = path.startsWith("#") ? path : `#/${path.replace(/^\//, "")}`;
 }
 
@@ -42,9 +45,16 @@ export default function App() {
           <a href="#/instructor" className={page === "instructor" ? "on" : ""}>Instructor</a>
         </nav>
       </header>
+      {DEMO && (
+        <div className="preview-bar">
+          <b>Preview build.</b> Missions run live in your browser. Scoring, debriefs and the dashboards come from a recorded synthetic demo course;
+          the full app runs them on its server (<code>./scripts/start.sh</code>).
+        </div>
+      )}
       {!page && <Home />}
       {page === "briefing" && <Briefing sessionId={args[0]} />}
       {page === "aar" && <AAR sessionId={args[0]} />}
+      {page === "summary" && <SummaryPage sessionId={args[0]} />}
       {page === "trainee" && <TraineePage traineeId={args[0]} />}
       {page === "unit" && <UnitPage unitId={args[0]} />}
       {page === "instructor" && <Instructor />}
