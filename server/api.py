@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -73,6 +74,14 @@ def health():
 @app.get("/api/catalogue")
 def catalogue():
     return catalogue_json()
+
+
+@app.get("/api/aid/model")
+def aid_model():
+    path = ROOT / "content" / "aid" / "model.json"
+    if not path.exists():
+        raise HTTPException(404, "no aid model; run scripts/train_aid.py")
+    return json.loads(path.read_text())
 
 
 @app.get("/api/missions")

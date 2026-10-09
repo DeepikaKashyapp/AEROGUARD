@@ -4,3 +4,4 @@ export { Sim, DT, LABELS, DECISIONS, hostilityOf, round2, type SimOptions, type 
 export { Terrain } from "./terrain.ts";
 export { Rng, streamSeed } from "./rng.ts";
 export * from "./vec.ts";
+export { AID_CLASSES, AID_FEATURES, featuresOf, makeAid, predict, type AidModel } from "./aid.ts";

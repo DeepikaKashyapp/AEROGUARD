@@ -267,3 +267,28 @@ describe("camera video tracker", () => {
     expect(sim.cameraTrackCentre().ok).toBe(false);
   });
 });
+
+describe("classification aid", () => {
+  it("suggests from sensor features only, and the unreliable mode is confidently wrong on a fixed subset", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const { makeAid } = await import("../src/aid.ts");
+    const model = JSON.parse(readFileSync(fileURLToPath(new URL("../../content/aid/model.json", import.meta.url)), "utf8"));
+    const honest = makeAid(model, "honest");
+    const sim = makeSim(emptySky(), { aidMode: "honest", aid: honest });
+    const e = inject(sim, "fpv_rf", v3(2400, 0));
+    expect(until(sim, () => !!trackOf(sim, e)?.aid, 60)).toBe(true);
+    const s = trackOf(sim, e)!.aid!;
+    expect(s.label).toBe("fpv");
+    expect(s.p).toBeGreaterThan(0.5);
+    expect(s.reasons.length).toBeGreaterThan(0);
+    expect(sim.events.some((x) => x.type === "ai_suggestion")).toBe(true);
+    // unreliable: over many tracks, about a third get a confident wrong answer
+    const unreliable = makeAid(model, "unreliable");
+    const sim2 = makeSim(fixture(), { aidMode: "unreliable", aid: unreliable });
+    sim2.advance(200);
+    const judged = sim2.tracks.filter((t) => t.aid);
+    const wrong = judged.filter((t) => t.aid!.label !== sim2.byId.get(t.entityId)!.spec.label);
+    expect(wrong.length / judged.length).toBeGreaterThan(0.2);
+  });
+});

@@ -1,6 +1,9 @@
-import type { AidFn } from "@cuas/sim";
+import { makeAid, type AidFn, type AidModel } from "@cuas/sim";
 
-/** The classification aid is wired in later (PLAN.md 6.12); until then there is no suggestion. */
-export async function loadAid(_mode: "honest" | "unreliable"): Promise<AidFn | undefined> {
-  return undefined;
+/** Load the trained classification aid (content/aid/model.json via the API). */
+export async function loadAid(mode: "honest" | "unreliable"): Promise<AidFn | undefined> {
+  const res = await fetch("/api/aid/model");
+  if (!res.ok) return undefined;
+  const model = (await res.json()) as AidModel;
+  return makeAid(model, mode);
 }

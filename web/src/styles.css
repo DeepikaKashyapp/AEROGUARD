@@ -257,3 +257,4 @@ table.data td.num, table.data th.num { text-align: right; font-family: var(--mon
 .stat-tile .v.alert { color: var(--alert); }
 .stat-tile .n { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .heat td.cell { min-width: 58px; border-radius: 4px; color: #fff; }
+table.data td.num { white-space: nowrap; }
