@@ -1,0 +1,57 @@
+# Rules-of-engagement drill: weapons hold, a town under the main threat axis,
+# civil drones over the town, two friendly UAVs (one with a failed
+# transponder) near the jamming sectors. Rain degrades the laser and acoustics.
+name: Urban fringe - weapons hold in the rain
+mode: scripted
+tags: [roe, urban, dusk, rain]
+duration_s: 450
+briefing: >-
+  1900 hrs, rain. An ammunition depot on the edge of a town. Weapons hold:
+  request authority before any hard kill. Two friendly UAVs are up: one on
+  corridor CHARLIE, one on DELTA whose IFF transponder has been reported
+  faulty. Civilians fly hobby drones over the town most evenings.
+intel: >-
+  RF-controlled FPVs launched from the south-east will likely use the town
+  as cover. A fixed-wing munition may follow from the north-east.
+randomise: { time_jitter_s: 8, bearing_jitter_deg: 10 }
+map:
+  terrain_seed: 5150
+  terrain: plains
+  assets:
+    - { id: DEPOT, name: Ammunition depot, type: depot, pos: [0, 0], value: 100, radius_m: 160 }
+    - { id: HQ, name: Brigade HQ, type: hq, pos: [-500, 350], value: 80, radius_m: 80 }
+  no_fire_zones:
+    - { id: TOWN, name: Town, center: [1700, -1400], radius_m: 900 }
+  corridors:
+    - { id: CHARLIE, name: Corridor CHARLIE, points: [[-3500, -1000], [-1000, -3800]], alt_m: 420 }
+    - { id: DELTA, name: Corridor DELTA, points: [[1500, 3500], [3800, 1200]], alt_m: 380 }
+environment: { time_of_day: dusk, weather: rain, ambient_noise_db: 55 }
+roe: { state: weapons_hold, authority_delay_s: 8 }
+sensors:
+  - { id: RDR, type: d4_radar, pos: [0, 40] }
+  - { id: RFD, type: rf_detector, pos: [15, 40] }
+  - { id: ACS, type: acoustic_array, pos: [-15, 40] }
+  - { id: CAM, type: eoir_turret, pos: [0, 55] }
+  - { id: IFF, type: iff_interrogator, pos: [0, 45] }
+effectors:
+  - { id: JAM, type: d4_rf_jammer, pos: [60, 20] }
+  - { id: GNS, type: d4_gnss_spoofer, pos: [60, 35] }
+  - { id: LSR, type: d4_laser, pos: [70, -30] }
+  - { id: RKT, type: bhargavastra_rocket, pos: [-120, 60] }
+  - { id: MSL, type: bhargavastra_missile, pos: [-90, -80] }
+  - { id: SHK, type: shilka, pos: [300, -200] }
+waves:
+  - { id: W1, t: 30, tactic: direct, bearing_deg: 135, spread_deg: 12, range_m: 5500, target: DEPOT,
+      units: [{ cls: fpv_rf, n: 3 }] }
+  - { id: W2, t: 15, tactic: direct, bearing_deg: 250, spread_deg: 20, range_m: 4500, target: HQ,
+      units: [{ cls: recon_quad, n: 2 }] }
+  - { id: W3, t: 120, tactic: direct, bearing_deg: 45, spread_deg: 10, range_m: 7000, target: DEPOT,
+      units: [{ cls: loitering_munition, n: 1 }, { cls: fpv_rf, n: 2 }] }
+clutter:
+  bird_flocks: 1
+  birds_per_flock: [3, 5]
+  friendly_flights:
+    - { id: F1, corridor: CHARLIE, t: 0, iff: true }
+    - { id: F2, corridor: DELTA, t: 20, iff: false }
+  civil_drones: 2
+difficulty: { level: 0.6, focus: [S6], load: {} }

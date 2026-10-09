@@ -84,11 +84,11 @@ l70:
   range_m: 3000
   ammo: 240
   rounds_per_shot: 6
-  pk: 0.4
+  pk: 0.55
   cycle_s: 1.5
   speed_mps: 1000
   slew_s: 1.5
-  cost_inr: 25000
+  cost_inr: 8000
   needs_los: true
   source: Used in Op Sindoor per PS 26247 (Patrika); performance figures illustrative
 
@@ -99,7 +99,7 @@ zu23:
   range_m: 1800
   ammo: 800
   rounds_per_shot: 20
-  pk: 0.3
+  pk: 0.45
   cycle_s: 1.2
   speed_mps: 970
   slew_s: 1.2
@@ -114,7 +114,7 @@ shilka:
   range_m: 2500
   ammo: 1000
   rounds_per_shot: 30
-  pk: 0.45
+  pk: 0.6
   cycle_s: 1.2
   speed_mps: 1000
   slew_s: 1.0

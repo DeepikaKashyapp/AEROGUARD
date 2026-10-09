@@ -1,0 +1,57 @@
+# Benchmark B-1 (PLAN.md 11). A fixed mission, never randomised and never part
+# of the adaptive rotation, flown at sessions 1, 5 and 10. It touches every
+# skill once, so its score is the main evidence that a trainee is learning.
+name: Benchmark B-1 - dusk mixed raid
+mode: benchmark
+tags: [benchmark]
+duration_s: 480
+fixed_seed: 2026
+briefing: >-
+  1830 hrs, last light, haze. A forward airbase in the foothills with a town
+  to the south-east. Weapons tight. A friendly ISR UAV patrols corridor ALPHA.
+  This is a benchmark mission: everyone flies exactly the same attack.
+intel: >-
+  Mixed threat expected: RF-controlled and fiber-optic FPVs, a recon
+  quadcopter, and at least one fixed-wing munition possibly escorted by decoys.
+randomise: null
+map:
+  terrain_seed: 2026
+  terrain: foothills
+  assets:
+    - { id: RWY, name: Runway, type: runway, pos: [0, 0], value: 100, radius_m: 150 }
+    - { id: HGR, name: Hangar line, type: hangar, pos: [420, -300], value: 80, radius_m: 90 }
+  no_fire_zones:
+    - { id: TOWN, name: Town, center: [2600, -2300], radius_m: 800 }
+  corridors:
+    - { id: ALPHA, name: Corridor ALPHA, points: [[-4500, 1500], [-1500, 4200]], alt_m: 450 }
+environment: { time_of_day: dusk, weather: haze, ambient_noise_db: 48 }
+roe: { state: weapons_tight, authority_delay_s: 8 }
+sensors:
+  - { id: RDR, type: d4_radar, pos: [0, 40], events: [{ t: 150, state: down, for_s: 40 }] }
+  - { id: RFD, type: rf_detector, pos: [15, 40] }
+  - { id: ACS, type: acoustic_array, pos: [-15, 40] }
+  - { id: CAM, type: eoir_turret, pos: [0, 55] }
+  - { id: IFF, type: iff_interrogator, pos: [0, 45] }
+effectors:
+  - { id: JAM, type: d4_rf_jammer, pos: [60, 20] }
+  - { id: GNS, type: d4_gnss_spoofer, pos: [60, 35] }
+  - { id: LSR, type: d4_laser, pos: [70, -30] }
+  - { id: RKT, type: bhargavastra_rocket, pos: [-120, 60] }
+  - { id: MSL, type: bhargavastra_missile, pos: [-90, -80] }
+  - { id: SAM, type: sam_medium, pos: [-600, -500] }
+  - { id: ZU, type: zu23, pos: [260, 180] }
+waves:
+  - { id: W1, t: 20, tactic: direct, bearing_deg: 230, spread_deg: 8, range_m: 4500, target: RWY,
+      units: [{ cls: recon_quad, n: 1 }] }
+  - { id: W2, t: 40, tactic: direct, bearing_deg: 140, spread_deg: 20, range_m: 5500, target: HGR,
+      units: [{ cls: fpv_rf, n: 3 }] }
+  - { id: W3, t: 90, tactic: decoy_first, bearing_deg: 75, spread_deg: 12, range_m: 7500, target: RWY,
+      units: [{ cls: decoy, n: 2 }, { cls: loitering_munition, n: 1 }] }
+  - { id: W4, t: 140, tactic: split_flank, bearing_deg: 330, spread_deg: 14, range_m: 6000, target: HGR,
+      units: [{ cls: fpv_fiber, n: 3 }] }
+clutter:
+  bird_flocks: 3
+  birds_per_flock: [3, 6]
+  friendly_flights: [{ id: F1, corridor: ALPHA, t: 0, iff: true }]
+  civil_drones: 1
+difficulty: { level: 0.5, focus: [], load: {} }

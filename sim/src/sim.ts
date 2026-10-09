@@ -570,6 +570,8 @@ export class Sim {
   }
 
   private reconComplete(e: Entity): void {
+    // it leaves with its intel: resolved (badly) from this moment, though it is still visible flying home
+    if (e.outcome === "active") this.setOutcome(e, "exited", null);
     this.emit("recon_complete", { track: e.trackId, entity: e.id, data: { asset: e.targetAsset } });
     if (e.trackId) this.say(`${e.trackId} broke orbit: base layout likely compromised`, "warn");
   }

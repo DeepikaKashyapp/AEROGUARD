@@ -1,0 +1,160 @@
+# AEROGUARD scoring rule tree (PLAN.md 6.9). Instructors edit this file (or the
+# Instructor page, which re-scores past sessions before publishing).
+#
+# Every stage of the kill chain is scored per track:
+#   detect          - how fast a real threat was hooked after it appeared (t0)
+#   classify        - penalty matrix: what it really was vs what it was called
+#   decide_engage   - 100 minus every matching rule below, per track
+# plus the mission outcome:
+#   outcome         - mean health of the defended assets, plus `mission` rules
+#
+# Rule conditions are ANDed. Keys are fact names, optionally suffixed:
+#   _in / _not_in (list), _gt / _ge / _lt / _le (number), _ne (not equal).
+# `scope: action` rules are checked against every engagement order;
+# `scope: track` rules once per track; `scope: mission` rules once per
+# mission (their points apply to the outcome stage). `points` add to that
+# track's decide_engage score; `cap_grade` caps the mission grade; severity
+# `good` marks a positive note shown in the after-action review.
+
+version: 1
+weights: { detect: 0.2, classify: 0.2, decide_engage: 0.4, outcome: 0.2 }
+grades: { A: 85, B: 70, C: 55, D: 40 }
+
+detect:                  # PS: detected in 4 s -> full points; 15 s -> partial; missed -> zero
+  full_if_latency_le_s: 4
+  linear_to_s: 15        # 100 at 4 s falling linearly to `linear_floor` at 15 s
+  linear_floor: 40
+  late_floor: 20         # hooked later than 15 s
+  missed: 0              # on the display but never hooked
+
+classify:
+  unclassified: { hostile: -50, friendly: -40, other: -10 }
+  default_wrong: -15
+  penalty:               # penalty[true label][called as]
+    bird:      { recon: -5, fpv: -5, loitering: -5, decoy: -5, civil: -2, friendly: -10 }   # false alarm: small
+    civil:     { recon: -10, fpv: -20, loitering: -20, decoy: -10, bird: -5 }
+    friendly:  { recon: -60, fpv: -60, loitering: -60, decoy: -60, bird: -20, civil: -20 }
+    recon:     { bird: -40, civil: -30, friendly: -50, fpv: -5, decoy: -10, loitering: -10 }
+    fpv:       { bird: -60, civil: -50, friendly: -60, recon: -15, decoy: -30, loitering: -10 }   # PS: FPV called a bird -> big penalty
+    loitering: { decoy: -40, bird: -60, friendly: -60, civil: -60, recon: -20, fpv: -10 }
+    decoy:     { loitering: -5, bird: -20, friendly: -30, civil: -20, recon: -10, fpv: -10 }
+
+cost_exchange_ratio: 15  # an engagement costing more than this multiple of the drone's value is poor
+
+rules:
+  # --- critical -----------------------------------------------------------
+  - id: FRATRICIDE
+    scope: action
+    when: { true_class: friendly_uav, kill: hard }
+    then: { points: -100, severity: critical, cap_grade: F, tag: fratricide }
+    msg: "Fired on a friendly UAV with {effector_name}."      # PS: shot at a friendly drone -> critical failure
+  - id: FRIENDLY_LINK_LOST
+    scope: track
+    when: { true_class: friendly_uav, friendly_link_lost: true }
+    then: { points: -60, severity: major, tag: fratricide }
+    msg: "Own UAV lost its control link to our jammer."
+
+  # --- ROE and collateral -------------------------------------------------
+  - id: TIGHT_ROE_UNIDENTIFIED
+    scope: action
+    when: { roe: weapons_tight, kill: hard, label_at_action: unknown }
+    then: { points: -30, severity: major, tag: roe }
+    msg: "Weapons tight: hard kill on an unidentified track."
+  - id: HOLD_WITHOUT_AUTHORITY
+    scope: action
+    when: { roe: weapons_hold, kill: hard, authority_ne: granted }
+    then: { points: -40, severity: major, tag: roe }
+    msg: "Weapons hold: fired without authority."
+  - id: CIVIL_HARD_KILL
+    scope: action
+    when: { true_class: civil_drone, kill: hard }
+    then: { points: -40, severity: major, tag: roe }
+    msg: "Hard kill on a civil drone: monitor it, or at most jam it."
+  - id: COLLATERAL
+    scope: action
+    when: { over_nfz: true, kind_in: [gun, rocket] }
+    then: { points: -30, severity: major, tag: collateral }
+    msg: "{effector_name} fired over a no-fire zone."
+  - id: SECTOR_COVERED_FRIENDLY
+    scope: action
+    when: { kind_in: [rf_jam, gnss_spoof], friendlies_in_sector_gt: 0 }
+    then: { points: -10, tag: fratricide }
+    msg: "The {effector_name} sector also covered {friendlies_in_sector} own or civil drone(s)."
+
+  # --- wasted actions and cost-exchange -----------------------------------
+  - id: JAM_UNJAMMABLE
+    scope: action
+    when: { kind: rf_jam, hostile: true, link_in: [fiber, none] }
+    then: { points: -15, tag: wasted_action }
+    msg: "RF jamming cannot affect a {link_desc} drone."      # PS: jammed a fiber-optic or autonomous drone -> wasted
+  - id: SPOOF_MANUAL
+    scope: action
+    when: { kind: gnss_spoof, hostile: true, nav_in: [manual, none] }
+    then: { points: -10, tag: wasted_action }
+    msg: "GNSS spoofing cannot divert a manually flown drone."
+  - id: POOR_COST_EXCHANGE
+    scope: action
+    when: { cost_ratio_poor: true }
+    then: { points: -25, severity: major, tag: cost_exchange }
+    msg: "Spent {spent_fmt} on a {threat_value_fmt} drone ({action_cost_ratio_fmt}x its value)."   # PS: Rs-crore missile on a Rs 20,000 quad
+  - id: EXPENSIVE_ON_DECOY
+    scope: action
+    when: { true_class: decoy, kind_in: [missile, sam] }
+    then: { points: -15, tag: cost_exchange }
+    msg: "Guided missile spent on a decoy."
+  - id: SHOT_BIRD
+    scope: action
+    when: { true_class: bird, kill: hard }
+    then: { points: -10, tag: false_alarm }
+    msg: "Engaged a bird."
+
+  # --- outcomes -----------------------------------------------------------
+  - id: LEAKER
+    scope: track
+    when: { hostile: true, outcome: leaked, damage_done_gt: 0 }
+    then: { points: -100, severity: major, tag: leaker }
+    msg: "Got through and hit the {asset_name}."
+  - id: LEAKER_MISSED
+    scope: track
+    when: { hostile: true, outcome: leaked, damage_done: 0 }
+    then: { points: -25, tag: leaker }
+    msg: "Got through the defence (missed the assets)."
+  - id: RECON_COMPLETED
+    scope: track
+    when: { recon_complete: true }
+    then: { points: -30, tag: recon }
+    msg: "Recon drone finished its orbit: the base layout is compromised."
+  - id: LATE_FIRST_ACTION
+    scope: track
+    when: { damaging: true, displayed: true, tti_at_first_action_lt: 10 }
+    then: { points: -10, tag: hesitation }
+    msg: "First action with only {tti_at_first_action_fmt} s to impact."
+  - id: THREAT_IGNORED
+    scope: track
+    when: { damaging: true, decision_final: ignore }
+    then: { points: -30, tag: hesitation }
+    msg: "A real threat was marked 'ignore'."
+
+  # --- mission ------------------------------------------------------------
+  - id: ASSET_DESTROYED
+    scope: mission
+    when: { min_asset_health_le: 0 }
+    then: { points: 0, severity: critical, cap_grade: D, tag: leaker }
+    msg: "The {worst_asset} was destroyed."
+  - id: HEAVY_LOSSES
+    scope: mission
+    when: { damaging_leakers_ge: 3 }
+    then: { points: -20, severity: major, tag: leaker }
+    msg: "{damaging_leakers} strikes got through the defence."
+
+  # --- positive notes (no points) -----------------------------------------
+  - id: CHEAP_SOFT_KILL
+    scope: action
+    when: { kind_in: [rf_jam, gnss_spoof], hostile: true, result_in: [link_lost, diverted] }
+    then: { points: 0, severity: good, tag: good }
+    msg: "Cheap soft kill with {effector_name}."
+  - id: CAMERA_CONFIRMED
+    scope: track
+    when: { hostile: true, camera_used: true, classified_correctly: true }
+    then: { points: 0, severity: good, tag: good }
+    msg: "Confirmed on the EO/IR camera before deciding."

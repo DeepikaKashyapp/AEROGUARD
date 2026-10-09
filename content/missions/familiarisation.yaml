@@ -1,0 +1,52 @@
+# First session for a new trainee: daylight, clear, weapons free, a handful of
+# threats with one of each lesson (RF FPVs to jam, a recon to deal with early,
+# one fiber FPV that jamming cannot touch).
+name: Familiarisation - daylight probe
+mode: scripted
+tags: [tutorial, day]
+duration_s: 360
+briefing: >-
+  1030 hrs. Clear skies over a forward airbase on the plains. Expect a small
+  probing attack. Weapons free. Use this session to learn the console: hook
+  new tracks, cue the camera to look at them, classify, then pick the
+  cheapest effector that will work.
+intel: >-
+  Small numbers of commercial quadcopters and RF-controlled FPVs have been
+  seen near the border this week.
+randomise: { time_jitter_s: 6, bearing_jitter_deg: 15 }
+map:
+  terrain_seed: 1101
+  terrain: plains
+  assets:
+    - { id: RWY, name: Runway, type: runway, pos: [0, 0], value: 100, radius_m: 150 }
+    - { id: HGR, name: Hangar line, type: hangar, pos: [380, -260], value: 80, radius_m: 90 }
+  no_fire_zones: []
+  corridors:
+    - { id: BRAVO, name: Corridor BRAVO, points: [[3500, -3000], [4200, 2500]], alt_m: 420 }
+environment: { time_of_day: day, weather: clear, ambient_noise_db: 45 }
+roe: { state: weapons_free, authority_delay_s: 8 }
+sensors:
+  - { id: RDR, type: d4_radar, pos: [0, 40] }
+  - { id: RFD, type: rf_detector, pos: [15, 40] }
+  - { id: ACS, type: acoustic_array, pos: [-15, 40] }
+  - { id: CAM, type: eoir_turret, pos: [0, 55] }
+  - { id: IFF, type: iff_interrogator, pos: [0, 45] }
+effectors:
+  - { id: JAM, type: d4_rf_jammer, pos: [60, 20] }
+  - { id: LSR, type: d4_laser, pos: [70, -30] }
+  - { id: ZU, type: zu23, pos: [260, 180] }
+  - { id: RKT, type: bhargavastra_rocket, pos: [-120, 60] }
+  - { id: MSL, type: bhargavastra_missile, pos: [-90, -80] }
+waves:
+  - { id: W1, t: 15, tactic: direct, bearing_deg: 70, spread_deg: 15, range_m: 5000, target: RWY,
+      units: [{ cls: fpv_rf, n: 2 }] }
+  - { id: W2, t: 30, tactic: recon_then_strike, bearing_deg: 200, spread_deg: 10, range_m: 4200, target: HGR,
+      units: [{ cls: recon_quad, n: 1 }, { cls: fpv_rf, n: 1 }] }
+  - { id: W3, t: 100, tactic: direct, bearing_deg: 320, spread_deg: 10, range_m: 5500, target: RWY,
+      units: [{ cls: fpv_fiber, n: 1 }] }
+clutter:
+  bird_flocks: 2
+  birds_per_flock: [3, 5]
+  friendly_flights: [{ id: F1, corridor: BRAVO, t: 0, iff: true }]
+  civil_drones: 0
+difficulty: { level: 0.15, focus: [S1, S2], load: {} }

@@ -1,0 +1,63 @@
+# Flagship mission (PLAN.md 12). RF detection is useless because the threats
+# are fiber-optic FPVs and pre-programmed munitions: the trainee has to work
+# from radar, cue the IR camera to classify, and choose cheap hard-kill
+# effectors over the Rs-crore SAM sitting in the inventory.
+name: Night autonomous swarm on a forward airbase
+mode: scripted
+tags: [flagship, night, swarm, rf_silent]
+duration_s: 480
+briefing: >-
+  0230 hrs. A forward airbase in the foothills. Aircraft are dispersed in
+  the hangar line and the fuel point is full. Divisional intelligence expects
+  a drone raid tonight from the north-east and east. Defend the runway,
+  hangars and fuel point. Weapons tight: hard kill only on positively
+  identified hostiles. A friendly ISR UAV is patrolling corridor ALPHA to the
+  north-west.
+intel: >-
+  The adversary has used fiber-optic FPVs and pre-programmed fixed-wing
+  munitions in this sector, with cheap decoys flown ahead of the real
+  strike. Expect little or no RF emission from the attackers.
+randomise: { time_jitter_s: 8, bearing_jitter_deg: 12 }
+map:
+  terrain_seed: 4242
+  terrain: foothills
+  assets:
+    - { id: RWY, name: Runway, type: runway, pos: [0, 0], value: 100, radius_m: 150 }
+    - { id: HGR, name: Hangar line, type: hangar, pos: [420, -300], value: 80, radius_m: 90 }
+    - { id: FUEL, name: Fuel point, type: fuel, pos: [-450, 260], value: 70, radius_m: 70 }
+  no_fire_zones:
+    - { id: VIL, name: Village, center: [-2600, -2400], radius_m: 700 }
+  corridors:
+    - { id: ALPHA, name: Corridor ALPHA, points: [[-4500, 1500], [-1500, 4200]], alt_m: 450 }
+environment: { time_of_day: night, weather: haze, ambient_noise_db: 42 }
+roe: { state: weapons_tight, authority_delay_s: 8 }
+sensors:
+  - { id: RDR, type: d4_radar, pos: [0, 40] }
+  - { id: RFD, type: rf_detector, pos: [15, 40] }
+  - { id: ACS, type: acoustic_array, pos: [-15, 40] }
+  - { id: CAM, type: eoir_turret, pos: [0, 55] }
+  - { id: IFF, type: iff_interrogator, pos: [0, 45] }
+effectors:
+  - { id: JAM, type: d4_rf_jammer, pos: [60, 20] }
+  - { id: GNS, type: d4_gnss_spoofer, pos: [60, 35] }
+  - { id: LSR, type: d4_laser, pos: [70, -30] }
+  - { id: RKT, type: bhargavastra_rocket, pos: [-120, 60] }
+  - { id: MSL, type: bhargavastra_missile, pos: [-90, -80] }
+  - { id: SAM, type: sam_medium, pos: [-600, -500] }
+  - { id: ZU, type: zu23, pos: [260, 180] }
+  - { id: L70, type: l70, pos: [-320, 300] }
+waves:
+  - { id: W1, t: 25, tactic: decoy_first, bearing_deg: 50, spread_deg: 14, range_m: 7500, target: RWY,
+      units: [{ cls: decoy, n: 4 }, { cls: loitering_munition, n: 2 }] }
+  - { id: W2, t: 10, tactic: recon_then_strike, bearing_deg: 210, spread_deg: 10, range_m: 4800, target: HGR,
+      units: [{ cls: recon_quad, n: 1 }, { cls: fpv_rf, n: 2 }] }
+  - { id: W3, t: 70, tactic: split_flank, bearing_deg: 20, spread_deg: 16, range_m: 6000, target: HGR,
+      units: [{ cls: fpv_fiber, n: 5 }] }
+  - { id: W4, t: 110, tactic: time_on_target, bearing_deg: 105, spread_deg: 40, range_m: 7000, target: FUEL, arrival_s: 190,
+      units: [{ cls: loitering_munition, n: 2 }, { cls: fpv_fiber, n: 2 }] }
+clutter:
+  bird_flocks: 2
+  birds_per_flock: [3, 5]
+  friendly_flights: [{ id: F1, corridor: ALPHA, t: 0, iff: true }]
+  civil_drones: 0
+difficulty: { level: 0.75, focus: [S3, S4, S5, S7], load: {} }
