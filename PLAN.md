@@ -1,10 +1,12 @@
 # PS 26247: AI Counter-Drone Decision Trainer: Plan, Workflow & Roadmap
 
-> **Working title:** C-UAS Decision Trainer · **Plan version:** v1 (2026-10-09)
+> **Product name:** AEROGUARD (working title in v1: C-UAS Decision Trainer) · **Plan version:** v1 (2026-10-09)
+> **Status:** the prototype in this repository implements the P0 scope and most of P1 (not yet: oracle-normalised
+> scores in the UI, PDF export, live instructor inject, gamepad). See the README for what is built, how it was verified,
+> and the deliberate deviations from this plan.
 > **Source:** PS 26247, AI Drone & Counter-Drone Threat Simulation Trainer
 > (Ministry of Defence / Defence Services Staff College, Software, Robotics & Drones).
-> This folder is the seed of the project. It should move into its own repository
-> once building starts (see Section 15).
+
 
 ## TL;DR
 

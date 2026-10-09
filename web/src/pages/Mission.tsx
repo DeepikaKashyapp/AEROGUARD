@@ -43,7 +43,8 @@ export default function Mission({ sessionId }: { sessionId: string }) {
         let aid: AidFn | undefined;
         if (aidMode !== "off") aid = await loadAid(aidMode);
         const sim = new Sim({ scenario, catalogue, actor: "trainee", aidMode, aid });
-        if (import.meta.env.DEV) (window as unknown as { __sim: Sim }).__sim = sim; // for automated browser tests
+        // exposed for automated browser tests (dev server, or ?e2e on any build)
+        if (import.meta.env.DEV || new URLSearchParams(location.search).has("e2e")) (window as unknown as { __sim: Sim }).__sim = sim;
         if (!dead) setState({ sim, session });
       } catch (e) {
         if (!dead) setState({ error: String(e) });

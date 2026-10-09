@@ -1,0 +1,26 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: npm ci
+      - run: python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+      - name: Type-check (sim, bots, web)
+        run: npm run typecheck
+      - name: Sim tests
+        run: npm run test:sim
+      - name: Server tests (contracts, generator, scoring + bot regression, API, adaptive, debrief)
+        run: .venv/bin/python -m pytest -q tests
+      - name: Build web app
+        run: npm run build:web

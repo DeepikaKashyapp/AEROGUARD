@@ -1,0 +1,5 @@
+-r requirements.txt
+pytest>=8
+# only for scripts/train_aid.py
+numpy>=1.26
+scikit-learn>=1.4

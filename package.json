@@ -1,5 +1,5 @@
 {
-  "name": "counter-drone-trainer",
+  "name": "aeroguard",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -12,7 +12,11 @@
     "test:sim": "npm run test -w sim",
     "typecheck": "tsc -p sim --noEmit && tsc -p bots --noEmit && tsc -p web --noEmit",
     "dev:web": "npm run dev -w web",
-    "build:web": "npm run build -w web"
+    "build:web": "npm run build -w web",
+    "start": "bash scripts/start.sh",
+    "e2e": "node web/e2e/playthrough.mjs",
+    "seed": ".venv/bin/python scripts/seed_demo.py",
+    "train-aid": ".venv/bin/python scripts/train_aid.py"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
