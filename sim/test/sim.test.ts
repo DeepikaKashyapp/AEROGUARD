@@ -250,3 +250,20 @@ describe("ROE, end of mission, outputs", () => {
     expect(json).not.toMatch(/fpv_fiber|loitering_munition|recon_quad|entityId|"cls"/);
   });
 });
+
+describe("camera video tracker", () => {
+  it("locks the visible object nearest the crosshair, not one outside the inner field of view", () => {
+    const sc = emptySky();
+    const sim = makeSim(sc);
+    const e = inject(sim, "recon_quad", v3(0, 1200), { agl: 100, speed: 1 });
+    sim.cameraZoom(6);
+    sim.advance(1);
+    sim.cameraSlew(bearing(sim.cameraPos(), e.pos) + 1.2, elevation(sim.cameraPos(), e.pos));
+    sim.advance(3);
+    expect(sim.cameraTrackCentre().ok).toBe(true); // 1.2 deg off in a 6 deg view: inside the inner 60%
+    sim.cameraUnlock();
+    sim.cameraSlew(bearing(sim.cameraPos(), e.pos) + 2.5, elevation(sim.cameraPos(), e.pos));
+    sim.advance(3);
+    expect(sim.cameraTrackCentre().ok).toBe(false);
+  });
+});

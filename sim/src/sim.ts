@@ -760,6 +760,33 @@ export class Sim {
     return { ok: true, track: tr.id };
   }
 
+  /**
+   * Video-tracker lock: like pressing "track" on a real turret, it locks the
+   * visible object nearest the crosshair (within the inner 60% of the field
+   * of view). The trainee still has to point the camera and zoom sensibly.
+   */
+  cameraTrackCentre(actor = this.actor): CommandResult {
+    if (!this.cameraAvailable()) return { ok: false, reason: "camera down" };
+    const from = this.cameraPos();
+    let best: Entity | null = null;
+    let bestOff = this.camera.fov * 0.3;
+    let lastReason = "nothing near the crosshair";
+    for (const e of this.entities) {
+      if (!e.flying || e.phase === "falling") continue;
+      const off = Math.hypot(angleDiff(bearing(from, e.pos), this.camera.az), elevation(from, e.pos) - this.camera.el);
+      if (off > bestOff) continue;
+      const can = cameraCanSee(this, e, from);
+      if (!can.ok) {
+        lastReason = can.reason ?? lastReason;
+        continue;
+      }
+      best = e;
+      bestOff = off;
+    }
+    if (!best) return { ok: false, reason: lastReason };
+    return this.cameraDesignate(best.id, actor);
+  }
+
   pause(): void {
     if (this.paused) return;
     this.paused = true;
