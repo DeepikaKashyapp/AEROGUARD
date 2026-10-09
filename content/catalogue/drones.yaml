@@ -57,7 +57,7 @@ recon_quad:
   label: recon
   hostile: true
   size_m: 0.4
-  cruise_mps: 12
+  cruise_mps: 15
   alt_m: [120, 250]
   rcs_m2: 0.012
   thermal: 0.65

@@ -1,0 +1,41 @@
+{
+  "id": "fixture-basic", "name": "Fixture: mixed raid", "seed": 1234, "mode": "scripted",
+  "briefing": "Test fixture", "intel": "", "duration_s": 300,
+  "map": {
+    "terrain_seed": 77, "terrain": "foothills", "size_m": 16000,
+    "assets": [
+      {"id": "RWY", "name": "Runway", "type": "runway", "pos": [0, 0], "value": 100, "radius_m": 150},
+      {"id": "HGR", "name": "Hangars", "type": "hangar", "pos": [350, -250], "value": 60, "radius_m": 80}
+    ],
+    "no_fire_zones": [{"id": "TOWN", "name": "Town", "center": [2800, -2600], "radius_m": 700}],
+    "corridors": [{"id": "C1", "name": "Corridor 1", "points": [[-3000, 2000], [3000, 2500]], "alt_m": 450}]
+  },
+  "environment": {"time_of_day": "day", "weather": "clear", "ambient_noise_db": 45},
+  "roe": {"state": "weapons_tight", "authority_delay_s": 8},
+  "sensors": [
+    {"id": "RDR", "type": "d4_radar", "pos": [0, 30], "events": []},
+    {"id": "RFD", "type": "rf_detector", "pos": [10, 30], "events": []},
+    {"id": "ACS", "type": "acoustic_array", "pos": [-10, 30], "events": []},
+    {"id": "CAM", "type": "eoir_turret", "pos": [0, 40], "events": []},
+    {"id": "IFF", "type": "iff_interrogator", "pos": [0, 35], "events": []}
+  ],
+  "effectors": [
+    {"id": "JAM", "type": "d4_rf_jammer", "pos": [50, 0], "ammo": null},
+    {"id": "GNS", "type": "d4_gnss_spoofer", "pos": [50, 10], "ammo": null},
+    {"id": "LSR", "type": "d4_laser", "pos": [60, -20], "ammo": null},
+    {"id": "RKT", "type": "bhargavastra_rocket", "pos": [-80, 40], "ammo": null},
+    {"id": "MSL", "type": "bhargavastra_missile", "pos": [-100, 0], "ammo": null},
+    {"id": "SAM", "type": "sam_medium", "pos": [-300, -300], "ammo": null},
+    {"id": "ZU", "type": "zu23", "pos": [200, 150], "ammo": null},
+    {"id": "L70", "type": "l70", "pos": [-200, 200], "ammo": null}
+  ],
+  "waves": [
+    {"id": "W1", "t": 10, "tactic": "direct", "bearing_deg": 45, "spread_deg": 20, "range_m": 6000, "target": "RWY", "units": [{"cls": "fpv_rf", "n": 3}], "arrival_s": null},
+    {"id": "W2", "t": 40, "tactic": "split_flank", "bearing_deg": 300, "spread_deg": 15, "range_m": 6500, "target": "HGR", "units": [{"cls": "fpv_fiber", "n": 4}], "arrival_s": null},
+    {"id": "W3", "t": 60, "tactic": "decoy_first", "bearing_deg": 90, "spread_deg": 10, "range_m": 7500, "target": "RWY", "units": [{"cls": "decoy", "n": 2}, {"cls": "loitering_munition", "n": 2}], "arrival_s": null},
+    {"id": "W4", "t": 5, "tactic": "recon_then_strike", "bearing_deg": 200, "spread_deg": 10, "range_m": 6000, "target": "RWY", "units": [{"cls": "recon_quad", "n": 1}, {"cls": "fpv_rf", "n": 2}], "arrival_s": null}
+  ],
+  "clutter": {"bird_flocks": 3, "birds_per_flock": [4, 6], "friendly_flights": [{"id": "F1", "corridor": "C1", "t": 0, "iff": true}], "civil_drones": 1},
+  "difficulty": {"level": 0.5, "focus": [], "load": {}},
+  "tags": [], "fingerprint": ""
+}

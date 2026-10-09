@@ -8,7 +8,7 @@
  */
 import type { Sim } from "./sim.ts";
 import type { CommandResult, EffectorState, Entity, Projectile, Track } from "./types.ts";
-import { add, angleDiff, bearing, dist, dist2, scale, v3, type Vec3 } from "./vec.ts";
+import { add, angleDiff, bearing, dist, dist2, scale, sub, v3, type Vec3 } from "./vec.ts";
 
 const LOCK_TOLERANCE_M = 60;
 const BREAK_LOCK_S = 3;
@@ -81,7 +81,7 @@ export function engage(sim: Sim, f: EffectorState, tr: Track, actor: "trainee" |
   return { ok: true };
 }
 
-export function cease(sim: Sim, f: EffectorState, actor: "trainee" | "bot", reason = "ceased"): void {
+export function cease(sim: Sim, f: EffectorState, actor: "trainee" | "bot" | "sim", reason = "ceased"): void {
   if (f.status !== "active" && f.status !== "slewing") return;
   sim.emit("cease", { track: f.targetTrack, actor, data: { effector: f.id, order: f.orderId } });
   finish(sim, f, reason === "ceased" ? "ceased" : reason);
@@ -239,9 +239,13 @@ function launch(sim: Sim, f: EffectorState, tr: Track, target: Entity): void {
   const est = sim.predicted(tr);
   const r = dist(f.pos, est);
   if (spec.kind === "rocket") {
-    // aim at the predicted intercept point from the TRACK (track error matters)
+    // Fire control refines the radar track (its elevation error alone is ~30 m
+    // at 2 km), but a bad track still drags the aim point: 40% of the track's
+    // error survives into the solution, plus the fire-control's own noise.
+    const err = sub(est, target.pos);
     let aim = est;
-    for (let i = 0; i < 2; i++) aim = add(est, scale(tr.vel, dist(f.pos, aim) / spec.speed_mps));
+    for (let i = 0; i < 2; i++) aim = add(target.pos, scale(target.vel, dist(f.pos, aim) / spec.speed_mps));
+    aim = add(aim, add(scale(err, 0.4), v3(sim.rng.effect.gauss() * 5, sim.rng.effect.gauss() * 5, sim.rng.effect.gauss() * 5)));
     for (let k = 0; k < spec.rounds_per_shot; k++) {
       const a = v3(aim.x + sim.rng.effect.gauss() * 6, aim.y + sim.rng.effect.gauss() * 6, aim.z + sim.rng.effect.gauss() * 4);
       sim.projectiles.push({ ...mkProjectile(sim, f, tr, null, a, dist(f.pos, a), spec.pk), blast: spec.blast_m });
@@ -286,7 +290,6 @@ function runProjectiles(sim: Sim): void {
         if (sim.rng.effect.chance(p.pk * (sim.cat.effect_matrix.rocket?.[e.cls] ?? 1))) {
           sim.neutralise(e, f);
           if (e.id === f.targetEntity || e.trackId === p.trackId) killed = true;
-          else killed = killed || false;
         }
       }
     } else {

@@ -1,4 +1,5 @@
-"""Export server/contracts.py to JSON Schema and generate sim/src/contracts.ts.
+"""Export server/contracts.py to JSON Schema, generate sim/src/contracts.ts, and
+write the normalised catalogue (schemas/catalogue.json) the TS side loads.
 
 Usage:  .venv/bin/python scripts/gen_contracts.py [--check]
 
@@ -15,10 +16,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from server.content import catalogue_json  # noqa: E402
 from server.contracts import EXPORTED  # noqa: E402
 
 SCHEMA_PATH = ROOT / "schemas" / "contracts.schema.json"
 TS_PATH = ROOT / "sim" / "src" / "contracts.ts"
+CATALOGUE_PATH = ROOT / "schemas" / "catalogue.json"
 
 
 def _draft7_tuples(node):
@@ -82,7 +85,11 @@ def generate_ts(schema_path: Path) -> str:
 def main() -> int:
     check = "--check" in sys.argv
     schema_text = json.dumps(build_schema(), indent=2) + "\n"
+    cat_text = json.dumps(catalogue_json(), indent=1) + "\n"
     if check:
+        if not CATALOGUE_PATH.exists() or CATALOGUE_PATH.read_text() != cat_text:
+            print("schemas/catalogue.json is stale; run scripts/gen_contracts.py")
+            return 1
         if not SCHEMA_PATH.exists() or SCHEMA_PATH.read_text() != schema_text:
             print("schemas/contracts.schema.json is stale; run scripts/gen_contracts.py")
             return 1
@@ -96,7 +103,8 @@ def main() -> int:
     SCHEMA_PATH.write_text(schema_text)
     TS_PATH.parent.mkdir(parents=True, exist_ok=True)
     TS_PATH.write_text(generate_ts(SCHEMA_PATH))
-    print(f"wrote {SCHEMA_PATH.relative_to(ROOT)} and {TS_PATH.relative_to(ROOT)}")
+    CATALOGUE_PATH.write_text(cat_text)
+    print(f"wrote {SCHEMA_PATH.relative_to(ROOT)}, {TS_PATH.relative_to(ROOT)} and {CATALOGUE_PATH.relative_to(ROOT)}")
     return 0
 
 

@@ -95,6 +95,8 @@ export interface Track {
   speedSamples: number[];
   altSamples: number[];
   thermalSeen: number | null;
+  aid: AidSuggestion | null;
+  aidLogged: Label | null;
 }
 
 export interface SensorState {
@@ -221,7 +223,7 @@ export interface EffectorView {
   x: number;
   y: number;
   range: number;
-  status: EffectorState["status"];
+  status: EffectorState["status"] | "reloading";
   ammo: number | null;
   costPerUse: number;
   targetTrack: string | null;
@@ -289,4 +291,5 @@ export interface Renderable {
 export interface CommandResult {
   ok: boolean;
   reason?: string;
+  track?: string;
 }
