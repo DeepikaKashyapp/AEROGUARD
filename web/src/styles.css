@@ -243,3 +243,17 @@ table.data td.num, table.data th.num { text-align: right; font-family: var(--mon
 @media (max-width: 1100px) {
   .console-body { grid-template-columns: minmax(0, 1fr) 380px; }
 }
+
+/* ---- charts & tiles ---- */
+.chartcard { min-width: 0; }
+.viz-tip { background: #0b1117; border: 1px solid var(--line-2); border-radius: 6px; padding: 6px 9px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.45); }
+.viz-tip .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.stat-tile { padding: 10px 12px; }
+.stat-tile .l { font-size: 12px; color: var(--muted); }
+.stat-tile .v { font-size: 26px; font-weight: 600; line-height: 1.2; }
+.stat-tile .v.good { color: var(--good); }
+.stat-tile .v.warn { color: var(--warn); }
+.stat-tile .v.alert { color: var(--alert); }
+.stat-tile .n { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.heat td.cell { min-width: 58px; border-radius: 4px; color: #fff; }
